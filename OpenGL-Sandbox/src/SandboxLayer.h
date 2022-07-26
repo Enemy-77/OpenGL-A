@@ -15,4 +15,8 @@ public:
 	virtual void OnUpdate(GLCore::Timestep ts) override;
 	virtual void OnImGuiRender() override;
 private:
+    std::unique_ptr<GLCore::Utils::Shader> m_Shader;
+    GLCore::Utils::OrthographicCameraController m_CameraController;
+    GLuint m_QuadVA, m_QuadVB, m_QuadIB;
+	GLuint m_Cpp, m_CppLogo;
 };
