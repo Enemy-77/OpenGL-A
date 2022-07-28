@@ -19,4 +19,6 @@ private:
     GLCore::Utils::OrthographicCameraController m_CameraController;
     GLuint m_QuadVA, m_QuadVB, m_QuadIB;
 	GLuint m_Cpp, m_CppLogo;
+	float m_QuadPosition[2] = { -1.5f, -0.5f };
+
 };
