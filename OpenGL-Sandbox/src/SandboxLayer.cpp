@@ -61,6 +61,10 @@ void SandboxLayer::OnAttach()
 
     glClearColor(0.1f, 0.1f, 0.1f, 0.1f);
 
+    const size_t MaxQuadCount = 1000;
+    const size_t MaxVertexCount = MaxQuadCount * 4;
+    const size_t MaxIndexCount = MaxQuadCount * 6;
+
     /*
     float vertices[] = {
         -1.5f, -0.5f, 0.0f, 0.18f, 0.6f, 0.96f, 1.0f, 0.0f, 0.0f, 0.0f,
@@ -80,7 +84,7 @@ void SandboxLayer::OnAttach()
     glCreateBuffers(1, &m_QuadVB);
     glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
     //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 1000, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MaxVertexCount, nullptr, GL_DYNAMIC_DRAW);
 
 
     glEnableVertexArrayAttrib(m_QuadVB, 0);
@@ -95,11 +99,25 @@ void SandboxLayer::OnAttach()
     glEnableVertexArrayAttrib(m_QuadVB, 3);
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void*)offsetof(Vertex, TexID));
 
+//     uint32_t indices[] = {
+//         0, 1, 2, 2, 3, 0,
+//         4, 5, 6, 6, 7, 4
+//     };
 
-    uint32_t indices[] = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-    };
+    uint32_t indices[MaxIndexCount];
+    uint32_t offset = 0;
+    for (size_t i = 0; i < MaxIndexCount; i += 6)
+    {
+        indices[i + 0] = 0 + offset;
+        indices[i + 1] = 1 + offset;
+        indices[i + 2] = 2 + offset;
+
+        indices[i + 3] = 2 + offset;
+        indices[i + 4] = 3 + offset;
+        indices[i + 5] = 0 + offset;
+
+        offset += 4;
+    }
 
     glCreateBuffers(1, &m_QuadIB);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadIB);
@@ -132,58 +150,58 @@ static void SetUniformVec4(uint32_t shader, const char* name, const glm::vec4& v
     glUniform4fv(loc, 1, glm::value_ptr(vec4));
 }
 
-static std::array<Vertex, 4> CreateQuad(float x, float y, float textureID)
+static Vertex* CreateQuad(Vertex* target, float x, float y, float textureID)
 {
     float size = 1.0f;
-    Vertex v0;
-    v0.Position[0] = x;
-    v0.Position[1] = y;
-    v0.Position[2] = 0.0f;
-    v0.Color[0] = 0.18f;
-    v0.Color[1] = 0.6f;
-    v0.Color[2] = 0.96f;
-    v0.Color[3] = 1.0f;
-    v0.TexCoord[0] = 0.0f;
-    v0.TexCoord[1] = 0.0f;
-    v0.TexID = textureID;
+    target->Position[0] = x;
+    target->Position[1] = y;
+    target->Position[2] = 0.0f;
+    target->Color[0] = 0.18f;
+    target->Color[1] = 0.6f;
+    target->Color[2] = 0.96f;
+    target->Color[3] = 1.0f;
+    target->TexCoord[0] = 0.0f;
+    target->TexCoord[1] = 0.0f;
+    target->TexID = textureID;
+    target++;
 
-    Vertex v1;
-    v1.Position[0] = x + size;
-    v1.Position[1] = y;
-    v1.Position[2] = 0.0f;
-    v1.Color[0] = 0.18f;
-    v1.Color[1] = 0.6f;
-    v1.Color[2] = 0.96f;
-    v1.Color[3] = 1.0f;
-    v1.TexCoord[0] = 1.0f;
-    v1.TexCoord[1] = 0.0f;
-    v1.TexID = textureID;
+    target->Position[0] = x + size;
+    target->Position[1] = y;
+    target->Position[2] = 0.0f;
+    target->Color[0] = 0.18f;
+    target->Color[1] = 0.6f;
+    target->Color[2] = 0.96f;
+    target->Color[3] = 1.0f;
+    target->TexCoord[0] = 1.0f;
+    target->TexCoord[1] = 0.0f;
+    target->TexID = textureID;
+    target++;
 
-    Vertex v2;
-    v2.Position[0] = x + size;
-    v2.Position[1] = y + size;
-    v2.Position[2] = 0.0f;
-    v2.Color[0] = 0.18f;
-    v2.Color[1] = 0.6f;
-    v2.Color[2] = 0.96f;
-    v2.Color[3] = 1.0f;
-    v2.TexCoord[0] = 1.0f;
-    v2.TexCoord[1] = 1.0f;
-    v2.TexID = textureID;
+    target->Position[0] = x + size;
+    target->Position[1] = y + size;
+    target->Position[2] = 0.0f;
+    target->Color[0] = 0.18f;
+    target->Color[1] = 0.6f;
+    target->Color[2] = 0.96f;
+    target->Color[3] = 1.0f;
+    target->TexCoord[0] = 1.0f;
+    target->TexCoord[1] = 1.0f;
+    target->TexID = textureID;
+    target++;
 
-    Vertex v3;
-    v3.Position[0] = x;
-    v3.Position[1] = y + size;
-    v3.Position[2] = 0.0f;
-    v3.Color[0] = 0.18f;
-    v3.Color[1] = 0.6f;
-    v3.Color[2] = 0.96f;
-    v3.Color[3] = 1.0f;
-    v3.TexCoord[0] = 0.0f;
-    v3.TexCoord[1] = 1.0f;
-    v3.TexID = textureID;
+    target->Position[0] = x;
+    target->Position[1] = y + size;
+    target->Position[2] = 0.0f;
+    target->Color[0] = 0.18f;
+    target->Color[1] = 0.6f;
+    target->Color[2] = 0.96f;
+    target->Color[3] = 1.0f;
+    target->TexCoord[0] = 0.0f;
+    target->TexCoord[1] = 1.0f;
+    target->TexID = textureID;
+    target++;
 
-    return { v0, v1, v2, v3 };
+    return target;
 }
 
 
@@ -205,15 +223,22 @@ void SandboxLayer::OnUpdate(Timestep ts)
          0.5f,  0.5f, 0.0f, 1.0f, 0.93f, 0.24f, 1.0f, 0.0f, 1.0f, 1.0f
     };*/
 
-    auto q0 = CreateQuad(m_QuadPosition[0], m_QuadPosition[1], 0.0f);
-    auto q1 = CreateQuad(0.5f, -0.5f, 1.0f);
-    Vertex vertices[8];
-    memcpy(vertices, q0.data(), q0.size() * sizeof(Vertex));
-    memcpy(vertices + q0.size(), q1.data(), q1.size() * sizeof(Vertex));
-
+    std::array<Vertex, 1000> vertices;
+    uint32_t indexCount = 0;
+    Vertex* buffer = vertices.data();
+    for (int y = 0; y < 5; ++y)
+    {
+        for (int x = 0; x < 5; ++x)
+        {
+            buffer = CreateQuad(buffer, x, y, (x + y) % 2);
+            indexCount += 6;
+        }
+    }
+    buffer = CreateQuad(buffer, m_QuadPosition[0], m_QuadPosition[1], 0.0f);
+    indexCount += 6;
 
     glBindBuffer(GL_ARRAY_BUFFER, m_QuadVB);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -228,7 +253,7 @@ void SandboxLayer::OnUpdate(Timestep ts)
     glBindVertexArray(m_QuadVA);
 
     SetUniformMat4(m_Shader->GetRendererID(), "u_Transform", glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
 }
 
 void SandboxLayer::OnImGuiRender()
